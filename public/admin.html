@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yodha Command Center | The Auto-Injector</title>
+    <style>
+        body { font-family: 'Helvetica Neue', sans-serif; background: #0a0a0a; color: white; padding: 20px; }
+        .dashboard { max-width: 800px; margin: 0 auto; background: #111; padding: 30px; border-radius: 12px; border: 1px solid #333; }
+        h1 { color: #ff6b00; text-transform: uppercase; letter-spacing: 2px; }
+        .upload-zone { border: 2px dashed #ff6b00; padding: 40px; text-align: center; border-radius: 8px; margin-top: 20px; cursor: pointer; background: #1a1a1a; transition: 0.3s; }
+        .upload-zone:hover { background: #222; }
+        .action-btn { background: #ff6b00; color: white; border: none; padding: 15px 30px; cursor: pointer; font-weight: bold; text-transform: uppercase; border-radius: 4px; margin-top: 20px; width: 100%; }
+        #status { margin-top: 20px; color: #00b894; font-weight: bold; white-space: pre-line; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard">
+        <h1>🛡️ THE ARSENAL AUTO-INJECTOR</h1>
+        <p style="color:#888;">Select your local <b>assets/designs</b> folder. The system will auto-generate Product IDs, titles, and descriptions, then blast them to Firebase.</p>
+        
+        <div class="upload-zone" onclick="document.getElementById('folderInput').click()">
+            <h2>📁 CLICK TO SCAN DESIGNS FOLDER</h2>
+            <p id="folder-name">No folder selected</p>
+        </div>
+        <input type="file" id="folderInput" webkitdirectory directory multiple style="display:none;" onchange="handleFolderSelect(event)">
+
+        <button class="action-btn" id="processBtn" style="display:none;">GENERATE & BLAST TO FIREBASE</button>
+        <div id="status"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Your exact Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCwjL9ZjExtCMc_nGLsJl6fgVFHizL1oVc",
+            authDomain: "modren-yodha.firebaseapp.com",
+            projectId: "modren-yodha",
+            storageBucket: "modren-yodha.firebasestorage.app",
+            messagingSenderId: "1005105513076",
+            appId: "1:1005105513076:web:9b656a42631b7e56444721"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let selectedFiles = [];
+
+        window.handleFolderSelect = function(event) {
+            selectedFiles = Array.from(event.target.files).filter(f => f.type.startsWith('image/'));
+            document.getElementById('folder-name').innerText = `Detected ${selectedFiles.length} deployment-ready designs.`;
+            document.getElementById('processBtn').style.display = 'block';
+        }
+
+        document.getElementById('processBtn').addEventListener('click', async () => {
+            const statusEl = document.getElementById('status');
+            statusEl.innerText = "⚡ INITIATING AUTO-GENERATION SEQUENCE...\n";
+            document.getElementById('processBtn').style.display = 'none';
+
+            for (let i = 0; i < selectedFiles.length; i++) {
+                let file = selectedFiles[i];
+                
+                // 1. Auto-Generate Unique Product ID (e.g., YODHA-7A9B)
+                const randomHash = Math.random().toString(36).substring(2, 6).toUpperCase();
+                const productId = `YODHA-${randomHash}`;
+
+                // 2. Auto-Generate Title from your filename
+                let cleanName = file.name.replace('_PRINT.png', '').replace('.png', '').replace(/_/g, ' ');
+                cleanName = cleanName.replace(/\b\w/g, char => char.toUpperCase());
+
+                // 3. Set the exact GitHub path for the frontend
+                const githubPath = `assets/designs/${file.name}`;
+
+                statusEl.innerText += `\n⚙️ Generating [${productId}] - ${cleanName}...`;
+
+                try {
+                    // 4. Blast everything into Firebase
+                    await setDoc(doc(db, "products", productId), {
+                        productId: productId,
+                        name: `${cleanName} Premium Drop`,
+                        price: 1499,
+                        category: "Vedic & Anime",
+                        description: `Exclusive Modren Yodha design: ${cleanName}. Premium water-based DTG print for an ultra-soft, vintage painted-on feel. Heavyweight 100% combed cotton. Drop-shoulder oversized fit.`,
+                        image: githubPath,
+                        createdAt: new Date().toISOString(),
+                        printrove_map: {
+                            section: "Mens",
+                            apparel_type: "Oversized T-Shirt - DTG",
+                            color: "Dynamic",
+                            design_file: file.name
+                        }
+                    });
+                    statusEl.innerText += ` ✅ STORED IN FIREBASE`;
+                } catch (error) {
+                    statusEl.innerText += ` ❌ FAILED: ${error.message}`;
+                }
+            }
+            statusEl.innerText += `\n\n🎯 ALL DESIGNS LIVE IN DATABASE! \nFinal Step: Double-click your 'deploy.bat' file to sync your images to the internet.`;
+        });
+    </script>
+</body>
+</html>

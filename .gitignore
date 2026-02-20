@@ -1,0 +1,9 @@
+Forge/ 
+bot/ 
+functions/ 
+*.py 
+*.bat 
+*.txt 
+*.json 
+.firebaserc 
+.firebase/ 

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details | Modren Yodha</title>
+    <style>
+        body { font-family: 'Helvetica Neue', sans-serif; background: #0f0f0f; color: #fff; margin: 0; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: #0f0f0f; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; }
+        nav .logo { font-size: 1.2rem; font-weight: bold; color: #ff6b00; text-decoration: none; }
+        nav .links a { color: white; text-decoration: none; font-size: 0.8rem; text-transform: uppercase; margin-left: 15px; }
+
+        .product-container { display: flex; flex-direction: column; gap: 30px; padding: 20px; max-width: 1100px; margin: 0 auto; }
+        @media (min-width: 768px) {
+            .product-container { flex-direction: row; padding: 60px 20px; }
+            .image-section, .details-section { flex: 1; }
+        }
+
+        .main-img { width: 100%; border-radius: 4px; border: 1px solid #222; }
+        .price { color: #ff6b00; font-size: 2rem; font-weight: bold; margin: 15px 0; }
+        .buy-now-btn { background: #ff6b00; color: white; border: none; padding: 18px; width: 100%; font-weight: bold; font-size: 1rem; cursor: pointer; text-transform: uppercase; margin-top: 20px; transition: 0.3s; }
+        .buy-now-btn:hover { background: #fff; color: #000; }
+        
+        .specs { margin-top: 30px; border-top: 1px solid #222; padding-top: 20px; color: #888; font-size: 0.9rem; line-height: 1.8; }
+        
+        footer { background: #111; padding: 40px 5%; border-top: 1px solid #222; margin-top: 60px; text-align: center; color: #666; font-size: 0.8rem; }
+
+        /* --- HIGH-END UI PHYSICS --- */
+        .toast { position: fixed; top: -100px; right: 20px; background: rgba(255,107,0,0.95); color: white; padding: 15px 30px; border-radius: 4px; font-weight: bold; transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 2000; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 10px 30px rgba(255,107,0,0.3); }
+        .toast.show { top: 20px; }
+
+        .cart-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 1001; display: none; opacity: 0; transition: 0.3s ease; }
+        .cart-overlay.active { display: block; opacity: 1; }
+
+        .cart-drawer { position: fixed; top: 0; right: -450px; width: 100%; max-width: 400px; height: 100vh; background: #0a0a0a; border-left: 1px solid #222; z-index: 1002; display: flex; flex-direction: column; transition: 0.5s cubic-bezier(0.25, 1, 0.5, 1); box-shadow: -10px 0 50px rgba(0,0,0,0.9); }
+        .cart-drawer.open { right: 0; }
+
+        .cart-header { padding: 25px; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
+        .cart-header h2 { margin: 0; color: #ff6b00; font-size: 1.2rem; letter-spacing: 3px; }
+        .close-btn { background: none; border: none; color: #666; font-size: 2rem; cursor: pointer; transition: 0.3s; }
+        .close-btn:hover { color: #fff; transform: rotate(90deg); }
+
+        .cart-items { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 20px; }
+        .cart-item { display: flex; gap: 15px; background: #111; padding: 15px; border: 1px solid #222; border-radius: 6px; }
+        .cart-item img { width: 70px; height: 90px; object-fit: cover; border-radius: 4px; background: #222; }
+        .item-details { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .item-name { font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; color: #eee; }
+        .item-size { color: #888; font-size: 0.8rem; margin-bottom: 5px; text-transform: uppercase; }
+        .item-price { color: #ff6b00; font-weight: bold; }
+        .remove-btn { background: none; border: none; color: #ff4444; font-size: 0.75rem; cursor: pointer; text-align: left; padding: 0; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .cart-footer { padding: 25px; border-top: 1px solid #1a1a1a; background: #050505; }
+        .subtotal { display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem; margin-bottom: 20px; color: #fff; }
+
+        /* FIXED SIZE SELECTOR */
+        .size-btn { background: #111; border: 1px solid #333; color: #888; padding: 12px 25px; cursor: pointer; transition: 0.3s; font-weight: bold; border-radius: 4px; }
+        .size-btn.selected { border-color: #ff6b00; color: #ff6b00; background: rgba(255,107,0,0.1); box-shadow: 0 0 15px rgba(255,107,0,0.2); }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="logo">MODREN YODHA</a>
+        <div class="links">
+            <a href="index.html">Home</a>
+            <a href="shop.html">Shop</a>
+        </div>
+    </nav>
+
+    <div class="product-container">
+        <div class="image-section">
+            <img id="p-img" src="" class="main-img">
+        </div>
+        <div class="details-section">
+            <h1 id="p-name" style="text-transform: uppercase; letter-spacing: 2px; margin: 0;"></h1>
+            <div class="price" id="p-price"></div>
+            
+            <p style="color: #666; margin-bottom: 10px; font-size: 0.8rem; letter-spacing: 1px;">SELECT SIZE</p>
+            <div id="size-selector" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button class="size-btn" onclick="selectSize(this, 'M')">M</button>
+                <button class="size-btn" onclick="selectSize(this, 'L')">L</button>
+                <button class="size-btn" onclick="selectSize(this, 'XL')">XL</button>
+            </div>
+
+            <div class="specs">
+                • 100% Cotton (240 GSM)<br>
+                • Premium High-Density Print<br>
+                • Oversized Comfort Fit<br>
+                • Proudly Made in India
+            </div>
+            
+            <button class="buy-now-btn" onclick="addToCart()">ADD TO ARSENAL</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <div id="cart-overlay" class="cart-overlay" onclick="toggleCart()"></div>
+    <div id="cart-drawer" class="cart-drawer">
+        <div class="cart-header">
+            <h2>ARSENAL</h2>
+            <button onclick="toggleCart()" class="close-btn">&times;</button>
+        </div>
+        <div id="cart-items" class="cart-items">
+            </div>
+        <div class="cart-footer">
+            <div class="subtotal">SUBTOTAL: <span id="cart-total">₹0</span></div>
+            <button class="buy-now-btn" style="margin-top:0;" onclick="goToCheckout()">SECURE GEAR</button>
+        </div>
+    </div>
+
+    <footer>
+        <div style="margin-bottom: 20px; color: #ff6b00; font-weight: bold;">MODREN YODHA</div>
+        <p>Vijayawada, Andhra Pradesh | Trusted Warrior Gear</p>
+        <p>&copy; 2026 Modren Yodha. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const name = params.get('name');
+        const price = parseInt(params.get('price'));
+        const image = params.get('image');
+
+        document.getElementById('p-name').innerText = name;
+        document.getElementById('p-price').innerText = "₹" + price;
+        document.getElementById('p-img').src = image;
+
+        let selectedSize = null;
+        let cart = JSON.parse(localStorage.getItem('yodha_cart')) || [];
+
+        function selectSize(btn, size) {
+            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedSize = size;
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.style.background = isError ? "rgba(255,68,68,0.95)" : "rgba(255,107,0,0.95)";
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function toggleCart() {
+            document.getElementById('cart-drawer').classList.toggle('open');
+            document.getElementById('cart-overlay').classList.toggle('active');
+            renderCart();
+        }
+
+        function addToCart() {
+            if (!selectedSize) {
+                showToast("⚠️ PLEASE SELECT A SIZE", true);
+                return;
+            }
+            
+            const item = {
+                name: name,
+                price: price,
+                image: image,
+                size: selectedSize,
+                id: Date.now() // Unique tracking ID
+            };
+            
+            cart.push(item);
+            localStorage.setItem('yodha_cart', JSON.stringify(cart));
+            
+            showToast("✔ GEAR ADDED TO ARSENAL");
+            toggleCart(); // Slide open automatically
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            localStorage.setItem('yodha_cart', JSON.stringify(cart));
+            renderCart();
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            const totalEl = document.getElementById('cart-total');
+            container.innerHTML = "";
+            let total = 0;
+            
+            if (cart.length === 0) {
+                container.innerHTML = "<p style='text-align:center; color:#555; margin-top:40px; font-size:0.9rem;'>Your Arsenal is empty.</p>";
+            } else {
+                cart.forEach(item => {
+                    total += item.price;
+                    container.innerHTML += `
+                        <div class="cart-item">
+                            <img src="${item.image}">
+                            <div class="item-details">
+                                <div class="item-name">${item.name}</div>
+                                <div class="item-size">SIZE: ${item.size}</div>
+                                <div class="item-price">₹${item.price}</div>
+                                <button class="remove-btn" onclick="removeFromCart(${item.id})">REMOVE</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            totalEl.innerText = `₹${total}`;
+        }
+        
+        function goToCheckout() {
+            if(cart.length === 0) {
+                showToast("⚠️ ARSENAL IS EMPTY", true);
+                return;
+            }
+            // Passing the bundled cart info to booking.html
+            window.location.href = `booking.html?name=${encodeURIComponent("Cart Order (" + cart.length + " items)")}&price=${document.getElementById('cart-total').innerText.replace('₹','')}`;
+        }
+    </script>
+</body>
+</html>

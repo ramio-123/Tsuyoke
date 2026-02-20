@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modren Yodha | Streetwear for the Brave</title>
+    <style>
+        body { font-family: 'Helvetica Neue', sans-serif; background-color: #0f0f0f; color: #fff; margin: 0; overflow-x: hidden; }
+        
+        /* Mobile-First Navigation */
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: rgba(15,15,15,0.98); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #333; }
+        nav .logo { font-size: 1.2rem; font-weight: bold; color: #ff6b00; letter-spacing: 2px; text-decoration: none; }
+        nav .links { display: flex; gap: 15px; }
+        nav .links a { color: white; text-decoration: none; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Responsive Hero */
+        .hero { 
+            height: 80vh; 
+            background: linear-gradient(to bottom, rgba(0,0,0,0.4), #0f0f0f), 
+                        url('https://res.cloudinary.com/deiuvg5ma/image/upload/f_auto,q_auto/v1771349445/karna1_wt0dpw.png');
+            background-size: cover; background-position: center;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 0 20px;
+        }
+        .hero h1 { font-size: 3rem; margin: 0; color: #ff6b00; letter-spacing: 5px; text-transform: uppercase; }
+        
+        /* Laptop adjustment */
+        @media (min-width: 768px) {
+            .hero h1 { font-size: 5rem; letter-spacing: 10px; }
+            nav .logo { font-size: 1.5rem; }
+            nav .links { gap: 30px; }
+            nav .links a { font-size: 0.8rem; }
+        }
+
+        .cta-btn { padding: 15px 40px; background: #ff6b00; color: white; text-decoration: none; font-weight: bold; text-transform: uppercase; transition: 0.3s; border: none; cursor: pointer; display: inline-block; margin-top: 20px; }
+        
+        /* Featured Grid Optimization */
+        .section-title { text-align: center; margin: 60px 0 30px; font-size: 1.5rem; letter-spacing: 4px; text-transform: uppercase; color: #ff6b00; }
+        .featured-grid { display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        
+        @media (min-width: 600px) { .featured-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1000px) { .featured-grid { grid-template-columns: repeat(3, 1fr); } }
+
+        .featured-card { background: #1a1a1a; padding: 15px; border: 1px solid #222; text-align: center; }
+        .featured-card img { width: 100%; height: auto; aspect-ratio: 3/4; object-fit: cover; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="logo">MODREN YODHA</a>
+        <div class="links">
+            <a href="index.html">Home</a>
+            <a href="shop.html">Shop</a>
+            <a href="about.html">Story</a>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <p style="letter-spacing: 2px; font-size: 0.8rem;">ANCIENT ROOTS. MODERN HUSTLE.</p>
+        <h1>MODREN YODHA</h1>
+        <a href="shop.html" class="cta-btn">Enter the Arsenal</a>
+    </div>
+
+    <h2 class="section-title">New Drops</h2>
+    <div class="featured-grid" id="latest-drops"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCwjL9ZjExtCMc_nGLsJl6fgVFHizL1oVc",
+            authDomain: "modren-yodha.firebaseapp.com",
+            projectId: "modren-yodha",
+            storageBucket: "modren-yodha.firebasestorage.app",
+            messagingSenderId: "1005105513076",
+            appId: "1:1005105513076:web:9b656a42631b7e56444721"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadFeatured() {
+            const grid = document.getElementById('latest-drops');
+            const q = query(collection(db, "products"), orderBy("createdAt", "desc"), limit(3));
+            const snap = await getDocs(q);
+            grid.innerHTML = "";
+            snap.forEach(doc => {
+                const item = doc.data();
+                grid.innerHTML += `
+                    <div class="featured-card">
+                        <img src="${item.image}" alt="${item.name}">
+                        <h3 style="font-size: 1rem;">${item.name}</h3>
+                        <p style="color:#ff6b00; font-weight:bold;">₹${item.price}</p>
+                        <a href="shop.html" class="cta-btn" style="padding: 10px 20px; font-size: 0.7rem; width:80%;">View Piece</a>
+                    </div>
+                `;
+            });
+        }
+        loadFeatured();
+    </script>
+</body>
+</html>

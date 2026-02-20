@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Checkout | Modren Yodha</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body { font-family: 'Helvetica Neue', sans-serif; background: #0f0f0f; color: #fff; margin: 0; padding: 0; }
+        
+        /* Premium Header */
+        header { text-align: center; padding: 30px; border-bottom: 1px solid #222; background: #0a0a0a; }
+        header h1 { margin: 0; color: #ff6b00; text-transform: uppercase; letter-spacing: 4px; font-size: 1.5rem; }
+        
+        .checkout-container { display: flex; flex-direction: column; max-width: 1000px; margin: 40px auto; padding: 0 20px; gap: 40px; }
+        @media (min-width: 768px) { .checkout-container { flex-direction: row; } }
+        
+        /* Order Summary Section */
+        .order-summary { flex: 1; background: #111; padding: 30px; border-radius: 8px; border: 1px solid #222; }
+        .order-summary h2 { margin-top: 0; font-size: 1.1rem; letter-spacing: 2px; color: #888; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        .checkout-items { max-height: 400px; overflow-y: auto; margin-bottom: 20px; }
+        .c-item { display: flex; gap: 15px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #222; }
+        .c-item img { width: 60px; height: 80px; object-fit: cover; border-radius: 4px; }
+        .c-details { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .c-name { font-weight: bold; font-size: 0.9rem; }
+        .c-size { color: #888; font-size: 0.8rem; margin-top: 5px; }
+        .c-price { color: #ff6b00; font-weight: bold; font-size: 0.9rem; margin-top: auto; }
+        .total-row { display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: bold; margin-top: 20px; color: #fff; }
+
+        /* Payment Section */
+        .payment-section { flex: 1; background: #111; padding: 30px; border-radius: 8px; border: 1px solid #222; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; color: #888; font-size: 0.8rem; margin-bottom: 8px; letter-spacing: 1px; }
+        input { width: 100%; padding: 15px; background: #050505; border: 1px solid #333; color: white; border-radius: 4px; box-sizing: border-box; font-size: 1rem; outline: none; transition: 0.3s; }
+        input:focus { border-color: #ff6b00; }
+
+        #mobile-payment-ui, #desktop-payment-ui { display: none; margin-top: 30px; text-align: center; }
+        
+        .pay-btn { background: #ff6b00; color: white; border: none; padding: 18px; width: 100%; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; }
+        .pay-btn:hover { background: #fff; color: #000; box-shadow: 0 0 20px rgba(255,107,0,0.4); }
+
+        #qrcode { background: white; padding: 15px; display: inline-block; border-radius: 8px; margin: 15px 0; }
+        .trust-badge { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 20px; color: #666; font-size: 0.8rem; }
+        .toast { position: fixed; top: -100px; right: 20px; background: rgba(255,68,68,0.95); color: white; padding: 15px 30px; border-radius: 4px; font-weight: bold; transition: 0.5s; z-index: 2000; }
+        .toast.show { top: 20px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>SECURE CHECKOUT</h1>
+    </header>
+
+    <div class="checkout-container">
+        <div class="order-summary">
+            <h2>ORDER SUMMARY</h2>
+            <div id="checkout-items" class="checkout-items">
+                </div>
+            <div class="total-row">
+                <span>TOTAL</span>
+                <span id="final-total">₹0</span>
+            </div>
+        </div>
+
+        <div class="payment-section">
+            <div class="input-group">
+                <label>FULL NAME</label>
+                <input type="text" id="name" placeholder="Enter your name">
+            </div>
+            <div class="input-group">
+                <label>WHATSAPP NUMBER</label>
+                <input type="tel" id="phone" placeholder="Enter your 10-digit number">
+            </div>
+
+            <div id="mobile-payment-ui">
+                <button class="pay-btn" onclick="handleMobilePayment()">PAY <span id="btn-total"></span> & CONFIRM</button>
+                <div class="trust-badge">🔒 Encrypted UPI Transfer via GPay / PhonePe</div>
+            </div>
+
+            <div id="desktop-payment-ui">
+                <div style="color: #888; font-size: 0.9rem; margin-bottom: 10px;">SCAN TO PAY VIA ANY UPI APP</div>
+                <div id="qrcode"></div>
+                <button class="pay-btn" style="margin-top:15px; background: #222;" onclick="confirmOrderOnly()">I HAVE PAID - LOG ORDER</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // 1. Pull the Arsenal from Memory
+        const cart = JSON.parse(localStorage.getItem('yodha_cart')) || [];
+        const upiId = "6302959768@ybl"; // Official Kotak UPI
+        
+        let totalPrice = 0;
+        let orderStringArray = [];
+        const itemsContainer = document.getElementById('checkout-items');
+
+        // Security redirect if user accessed URL without items
+        if (cart.length === 0) {
+            window.location.href = "shop.html"; 
+        }
+
+        // 2. Build the Premium UI
+        cart.forEach(item => {
+            totalPrice += item.price;
+            orderStringArray.push(`${item.name} (Size: ${item.size})`);
+            
+            itemsContainer.innerHTML += `
+                <div class="c-item">
+                    <img src="${item.image}" alt="${item.name}">
+                    <div class="c-details">
+                        <div class="c-name">${item.name}</div>
+                        <div class="c-size">SIZE: ${item.size}</div>
+                        <div class="c-price">₹${item.price}</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        // The specific string that gets sent to your MongoDB
+        const finalOrderString = orderStringArray.join(" | ");
+        
+        document.getElementById('final-total').innerText = "₹" + totalPrice;
+        document.getElementById('btn-total').innerText = "₹" + totalPrice;
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg; t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        // 3. Device Detection & UPI Generation
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (isMobile) {
+            document.getElementById('mobile-payment-ui').style.display = 'block';
+        } else {
+            document.getElementById('desktop-payment-ui').style.display = 'block';
+            const upiLink = `upi://pay?pa=${upiId}&pn=Modren%20Yodha&am=${totalPrice}&tn=ArsenalOrder&cu=INR`;
+            new QRCode(document.getElementById("qrcode"), {
+                text: upiLink, width: 160, height: 160,
+                colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
+            });
+        }
+
+        // 4. Secure Backend Logging
+        async function logOrder() {
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            
+            if(!name || phone.length < 10) { 
+                showToast("⚠️ PLEASE ENTER VALID NAME & PHONE"); 
+                return false; 
+            }
+
+            try {
+                await fetch('https://modren-yodha-backend.onrender.com/create-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, phone, item: finalOrderString })
+                });
+                return true;
+            } catch (err) {
+                console.error(err);
+                return true; // Failsafe allows payment even if free server slumbers
+            }
+        }
+
+        async function handleMobilePayment() {
+            const success = await logOrder();
+            if (success) {
+                localStorage.removeItem('yodha_cart'); // Empty cart after checkout
+                const upiUrl = `upi://pay?pa=${upiId}&pn=Modren%20Yodha&am=${totalPrice}&tn=ArsenalOrder&cu=INR`;
+                window.location.href = upiUrl;
+                setTimeout(() => { window.location.href = 'success.html'; }, 3000);
+            }
+        }
+
+        async function confirmOrderOnly() {
+            const success = await logOrder();
+            if (success) {
+                localStorage.removeItem('yodha_cart'); // Empty cart after checkout
+                window.location.href = 'success.html';
+            }
+        }
+    </script>
+</body>
+</html>
