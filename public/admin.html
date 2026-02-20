@@ -3,38 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yodha Command Center | The Auto-Injector</title>
+    <title>TSUYOKE Command Center | The Auto-Injector</title>
     <style>
-        body { font-family: 'Helvetica Neue', sans-serif; background: #0a0a0a; color: white; padding: 20px; }
-        .dashboard { max-width: 800px; margin: 0 auto; background: #111; padding: 30px; border-radius: 12px; border: 1px solid #333; }
-        h1 { color: #ff6b00; text-transform: uppercase; letter-spacing: 2px; }
-        .upload-zone { border: 2px dashed #ff6b00; padding: 40px; text-align: center; border-radius: 8px; margin-top: 20px; cursor: pointer; background: #1a1a1a; transition: 0.3s; }
-        .upload-zone:hover { background: #222; }
-        .action-btn { background: #ff6b00; color: white; border: none; padding: 15px 30px; cursor: pointer; font-weight: bold; text-transform: uppercase; border-radius: 4px; margin-top: 20px; width: 100%; }
-        #status { margin-top: 20px; color: #00b894; font-weight: bold; white-space: pre-line; line-height: 1.5; }
+        body { font-family: 'Helvetica Neue', sans-serif; background: #0a0a0a; color: white; padding: 20px; margin: 0; }
+        .dashboard { max-width: 900px; margin: 40px auto; background: #111; padding: 40px; border-radius: 12px; border: 1px solid #333; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        
+        h1 { color: #ff0000; text-transform: uppercase; letter-spacing: 3px; margin-top: 0; display: flex; align-items: center; gap: 15px; }
+        h1 span { font-size: 0.8rem; background: #ff0000; color: #fff; padding: 4px 8px; border-radius: 4px; letter-spacing: 1px; }
+        
+        p.subtitle { color: #888; margin-bottom: 30px; line-height: 1.6; }
+
+        /* Modern Upload Zone */
+        .upload-zone { 
+            border: 2px dashed #444; 
+            padding: 60px 20px; 
+            text-align: center; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            background: #161616; 
+            transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1); 
+        }
+        .upload-zone:hover { border-color: #ff0000; background: #1a1a1a; box-shadow: 0 0 30px rgba(255,0,0,0.1); }
+        .upload-zone h2 { font-size: 1.2rem; letter-spacing: 1px; color: #eee; }
+        .upload-zone p { color: #666; font-size: 0.9rem; margin-top: 10px; }
+
+        /* Action Controls */
+        .controls { margin-top: 30px; display: none; border-top: 1px solid #222; padding-top: 30px; }
+        .action-btn { 
+            background: #ff0000; 
+            color: white; 
+            border: none; 
+            padding: 18px 30px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            border-radius: 4px; 
+            width: 100%; 
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+        .action-btn:hover { background: #fff; color: #000; transform: scale(1.01); }
+        .action-btn:disabled { background: #333; cursor: not-allowed; color: #666; }
+
+        /* Status Terminal */
+        #status { 
+            margin-top: 30px; 
+            background: #000; 
+            padding: 20px; 
+            border-radius: 6px; 
+            font-family: 'Courier New', monospace; 
+            font-size: 0.85rem; 
+            color: #00ff41; 
+            max-height: 300px; 
+            overflow-y: auto; 
+            border: 1px solid #111;
+            line-height: 1.5;
+            display: none;
+        }
+        .error-log { color: #ff4444; }
+        .success-log { color: #00ff41; }
     </style>
 </head>
 <body>
 
     <div class="dashboard">
-        <h1>🛡️ THE ARSENAL AUTO-INJECTOR</h1>
-        <p style="color:#888;">Select your local <b>assets/designs</b> folder. The system will auto-generate Product IDs, titles, and descriptions, then blast them to Firebase.</p>
+        <h1>TSUYOKE <span>V2.0</span></h1>
+        <p class="subtitle">
+            <strong>THE AUTO-INJECTOR:</strong> Select your <b>assets/designs</b> folder. 
+            The system will auto-generate TSU-KE IDs, premium descriptions, and inject the metadata into the Firebase Forge.
+        </p>
         
-        <div class="upload-zone" onclick="document.getElementById('folderInput').click()">
-            <h2>📁 CLICK TO SCAN DESIGNS FOLDER</h2>
-            <p id="folder-name">No folder selected</p>
+        <div class="upload-zone" id="drop-zone" onclick="document.getElementById('folderInput').click()">
+            <h2 id="display-msg">📁 SCAN DESIGNS FOLDER</h2>
+            <p>Click to browse your local repository</p>
         </div>
+
         <input type="file" id="folderInput" webkitdirectory directory multiple style="display:none;" onchange="handleFolderSelect(event)">
 
-        <button class="action-btn" id="processBtn" style="display:none;">GENERATE & BLAST TO FIREBASE</button>
-        <div id="status"></div>
+        <div class="controls" id="controls">
+            <button class="action-btn" id="processBtn">BLAST TO FIREBASE FORGE</button>
+            <div id="status"></div>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Your exact Firebase config
+        // TSUYOKE Firebase Core
         const firebaseConfig = {
             apiKey: "AIzaSyCwjL9ZjExtCMc_nGLsJl6fgVFHizL1oVc",
             authDomain: "modren-yodha.firebaseapp.com",
@@ -50,55 +106,66 @@
         let selectedFiles = [];
 
         window.handleFolderSelect = function(event) {
-            selectedFiles = Array.from(event.target.files).filter(f => f.type.startsWith('image/'));
-            document.getElementById('folder-name').innerText = `Detected ${selectedFiles.length} deployment-ready designs.`;
-            document.getElementById('processBtn').style.display = 'block';
+            selectedFiles = Array.from(event.target.files).filter(f => 
+                f.type.startsWith('image/') || f.name.endsWith('.png') || f.name.endsWith('.jpg')
+            );
+            
+            if(selectedFiles.length > 0) {
+                document.getElementById('display-msg').innerText = `READY: ${selectedFiles.length} DESIGNS DETECTED`;
+                document.getElementById('controls').style.display = 'block';
+            }
         }
 
         document.getElementById('processBtn').addEventListener('click', async () => {
             const statusEl = document.getElementById('status');
-            statusEl.innerText = "⚡ INITIATING AUTO-GENERATION SEQUENCE...\n";
-            document.getElementById('processBtn').style.display = 'none';
+            const btn = document.getElementById('processBtn');
+            
+            statusEl.style.display = 'block';
+            statusEl.innerHTML = "> INITIATING TSUYOKE PROTOCOL...\n";
+            btn.disabled = true;
+            btn.innerText = "INJECTING...";
 
             for (let i = 0; i < selectedFiles.length; i++) {
                 let file = selectedFiles[i];
                 
-                // 1. Auto-Generate Unique Product ID (e.g., YODHA-7A9B)
+                // 1. Generate TSUYOKE Unique ID (e.g., TSU-KE-7A9B)
                 const randomHash = Math.random().toString(36).substring(2, 6).toUpperCase();
-                const productId = `YODHA-${randomHash}`;
+                const productId = `TSU-KE-${randomHash}`;
 
-                // 2. Auto-Generate Title from your filename
-                let cleanName = file.name.replace('_PRINT.png', '').replace('.png', '').replace(/_/g, ' ');
+                // 2. Clean Name Logic
+                let cleanName = file.name.replace('_PRINT', '').replace('.png', '').replace('.jpg', '').replace(/_/g, ' ');
                 cleanName = cleanName.replace(/\b\w/g, char => char.toUpperCase());
 
-                // 3. Set the exact GitHub path for the frontend
+                // 3. GitHub Relative Path
                 const githubPath = `assets/designs/${file.name}`;
 
-                statusEl.innerText += `\n⚙️ Generating [${productId}] - ${cleanName}...`;
+                statusEl.innerHTML += `> Forging [${productId}] - ${cleanName}...\n`;
 
                 try {
-                    // 4. Blast everything into Firebase
+                    // 4. Inject into Firestore
                     await setDoc(doc(db, "products", productId), {
                         productId: productId,
                         name: `${cleanName} Premium Drop`,
                         price: 1499,
-                        category: "Vedic & Anime",
-                        description: `Exclusive Modren Yodha design: ${cleanName}. Premium water-based DTG print for an ultra-soft, vintage painted-on feel. Heavyweight 100% combed cotton. Drop-shoulder oversized fit.`,
+                        category: cleanName.toLowerCase().includes('anime') ? "Anime" : "Vedic",
+                        description: `Exclusive TSUYOKE design: ${cleanName}. Part of the Lineage of Strength collection. 240 GSM Heavyweight Cotton.`,
                         image: githubPath,
                         createdAt: new Date().toISOString(),
                         printrove_map: {
                             section: "Mens",
-                            apparel_type: "Oversized T-Shirt - DTG",
-                            color: "Dynamic",
+                            apparel_type: "Oversized T-Shirt",
+                            color: "Black",
                             design_file: file.name
                         }
                     });
-                    statusEl.innerText += ` ✅ STORED IN FIREBASE`;
+                    statusEl.innerHTML += `<span class="success-log">  [SUCCESS] Stored in Forge.</span>\n`;
                 } catch (error) {
-                    statusEl.innerText += ` ❌ FAILED: ${error.message}`;
+                    statusEl.innerHTML += `<span class="error-log">  [FAILED] ${error.message}</span>\n`;
                 }
             }
-            statusEl.innerText += `\n\n🎯 ALL DESIGNS LIVE IN DATABASE! \nFinal Step: Double-click your 'deploy.bat' file to sync your images to the internet.`;
+            
+            statusEl.innerHTML += `\n🎯 ALL GEAR LIVE IN DATABASE.\n> NEXT STEP: RUN DEPLOY.BAT TO SYNC IMAGES.`;
+            btn.innerText = "INJECTION COMPLETE";
         });
     </script>
 </body>

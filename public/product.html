@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Details | Modren Yodha</title>
+    <title>Product Details | TSUYOKE</title>
     <style>
         body { font-family: 'Helvetica Neue', sans-serif; background: #0f0f0f; color: #fff; margin: 0; }
         nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: #0f0f0f; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; }
-        nav .logo { font-size: 1.2rem; font-weight: bold; color: #ff6b00; text-decoration: none; }
-        nav .links a { color: white; text-decoration: none; font-size: 0.8rem; text-transform: uppercase; margin-left: 15px; }
+        nav .logo { font-size: 1.2rem; font-weight: bold; color: #ff0000; text-decoration: none; letter-spacing: 4px; text-transform: uppercase; }
+        nav .links a { color: white; text-decoration: none; font-size: 0.8rem; text-transform: uppercase; margin-left: 15px; letter-spacing: 1px; }
+        nav .links a:hover { color: #ff0000; }
 
         .product-container { display: flex; flex-direction: column; gap: 30px; padding: 20px; max-width: 1100px; margin: 0 auto; }
         @media (min-width: 768px) {
@@ -17,8 +18,8 @@
         }
 
         .main-img { width: 100%; border-radius: 4px; border: 1px solid #222; }
-        .price { color: #ff6b00; font-size: 2rem; font-weight: bold; margin: 15px 0; }
-        .buy-now-btn { background: #ff6b00; color: white; border: none; padding: 18px; width: 100%; font-weight: bold; font-size: 1rem; cursor: pointer; text-transform: uppercase; margin-top: 20px; transition: 0.3s; }
+        .price { color: #ff0000; font-size: 2rem; font-weight: bold; margin: 15px 0; }
+        .buy-now-btn { background: #ff0000; color: white; border: none; padding: 18px; width: 100%; font-weight: bold; font-size: 1rem; cursor: pointer; text-transform: uppercase; margin-top: 20px; transition: 0.3s; letter-spacing: 2px; }
         .buy-now-btn:hover { background: #fff; color: #000; }
         
         .specs { margin-top: 30px; border-top: 1px solid #222; padding-top: 20px; color: #888; font-size: 0.9rem; line-height: 1.8; }
@@ -26,17 +27,17 @@
         footer { background: #111; padding: 40px 5%; border-top: 1px solid #222; margin-top: 60px; text-align: center; color: #666; font-size: 0.8rem; }
 
         /* --- HIGH-END UI PHYSICS --- */
-        .toast { position: fixed; top: -100px; right: 20px; background: rgba(255,107,0,0.95); color: white; padding: 15px 30px; border-radius: 4px; font-weight: bold; transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 2000; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 10px 30px rgba(255,107,0,0.3); }
+        .toast { position: fixed; top: -100px; right: 20px; background: rgba(255,0,0,0.95); color: white; padding: 15px 30px; border-radius: 4px; font-weight: bold; transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 2000; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 10px 30px rgba(255,0,0,0.3); }
         .toast.show { top: 20px; }
 
-        .cart-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 1001; display: none; opacity: 0; transition: 0.3s ease; }
+        .cart-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 1001; display: none; opacity: 0; transition: 0.3s ease; }
         .cart-overlay.active { display: block; opacity: 1; }
 
-        .cart-drawer { position: fixed; top: 0; right: -450px; width: 100%; max-width: 400px; height: 100vh; background: #0a0a0a; border-left: 1px solid #222; z-index: 1002; display: flex; flex-direction: column; transition: 0.5s cubic-bezier(0.25, 1, 0.5, 1); box-shadow: -10px 0 50px rgba(0,0,0,0.9); }
+        .cart-drawer { position: fixed; top: 0; right: -450px; width: 100%; max-width: 400px; height: 100vh; background: #0a0a0a; border-left: 1px solid #ff0000; z-index: 1002; display: flex; flex-direction: column; transition: 0.5s cubic-bezier(0.25, 1, 0.5, 1); box-shadow: -10px 0 50px rgba(0,0,0,0.9); }
         .cart-drawer.open { right: 0; }
 
         .cart-header { padding: 25px; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
-        .cart-header h2 { margin: 0; color: #ff6b00; font-size: 1.2rem; letter-spacing: 3px; }
+        .cart-header h2 { margin: 0; color: #ff0000; font-size: 1.2rem; letter-spacing: 4px; }
         .close-btn { background: none; border: none; color: #666; font-size: 2rem; cursor: pointer; transition: 0.3s; }
         .close-btn:hover { color: #fff; transform: rotate(90deg); }
 
@@ -44,9 +45,9 @@
         .cart-item { display: flex; gap: 15px; background: #111; padding: 15px; border: 1px solid #222; border-radius: 6px; }
         .cart-item img { width: 70px; height: 90px; object-fit: cover; border-radius: 4px; background: #222; }
         .item-details { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-        .item-name { font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; color: #eee; }
+        .item-name { font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; color: #eee; text-transform: uppercase; }
         .item-size { color: #888; font-size: 0.8rem; margin-bottom: 5px; text-transform: uppercase; }
-        .item-price { color: #ff6b00; font-weight: bold; }
+        .item-price { color: #ff0000; font-weight: bold; }
         .remove-btn { background: none; border: none; color: #ff4444; font-size: 0.75rem; cursor: pointer; text-align: left; padding: 0; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; }
 
         .cart-footer { padding: 25px; border-top: 1px solid #1a1a1a; background: #050505; }
@@ -54,13 +55,13 @@
 
         /* FIXED SIZE SELECTOR */
         .size-btn { background: #111; border: 1px solid #333; color: #888; padding: 12px 25px; cursor: pointer; transition: 0.3s; font-weight: bold; border-radius: 4px; }
-        .size-btn.selected { border-color: #ff6b00; color: #ff6b00; background: rgba(255,107,0,0.1); box-shadow: 0 0 15px rgba(255,107,0,0.2); }
+        .size-btn.selected { border-color: #ff0000; color: #ff0000; background: rgba(255,0,0,0.1); box-shadow: 0 0 15px rgba(255,0,0,0.2); }
     </style>
 </head>
 <body>
 
     <nav>
-        <a href="index.html" class="logo">MODREN YODHA</a>
+        <a href="index.html" class="logo">TSUYOKE</a>
         <div class="links">
             <a href="index.html">Home</a>
             <a href="shop.html">Shop</a>
@@ -98,7 +99,7 @@
     <div id="cart-overlay" class="cart-overlay" onclick="toggleCart()"></div>
     <div id="cart-drawer" class="cart-drawer">
         <div class="cart-header">
-            <h2>ARSENAL</h2>
+            <h2>TSUYOKE ARSENAL</h2>
             <button onclick="toggleCart()" class="close-btn">&times;</button>
         </div>
         <div id="cart-items" class="cart-items">
@@ -110,9 +111,9 @@
     </div>
 
     <footer>
-        <div style="margin-bottom: 20px; color: #ff6b00; font-weight: bold;">MODREN YODHA</div>
-        <p>Vijayawada, Andhra Pradesh | Trusted Warrior Gear</p>
-        <p>&copy; 2026 Modren Yodha. All rights reserved.</p>
+        <div style="margin-bottom: 20px; color: #ff0000; font-weight: bold; letter-spacing: 2px;">TSUYOKE</div>
+        <p>The Lineage of Strength | Trusted Warrior Gear</p>
+        <p>&copy; 2026 TSUYOKE. All rights reserved.</p>
     </footer>
 
     <script>
@@ -126,7 +127,7 @@
         document.getElementById('p-img').src = image;
 
         let selectedSize = null;
-        let cart = JSON.parse(localStorage.getItem('yodha_cart')) || [];
+        let cart = JSON.parse(localStorage.getItem('tsuyoke_cart')) || [];
 
         function selectSize(btn, size) {
             document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
@@ -137,7 +138,7 @@
         function showToast(message, isError = false) {
             const toast = document.getElementById('toast');
             toast.innerText = message;
-            toast.style.background = isError ? "rgba(255,68,68,0.95)" : "rgba(255,107,0,0.95)";
+            toast.style.background = isError ? "rgba(255,68,68,0.95)" : "rgba(255,0,0,0.95)";
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
@@ -163,7 +164,7 @@
             };
             
             cart.push(item);
-            localStorage.setItem('yodha_cart', JSON.stringify(cart));
+            localStorage.setItem('tsuyoke_cart', JSON.stringify(cart));
             
             showToast("✔ GEAR ADDED TO ARSENAL");
             toggleCart(); // Slide open automatically
@@ -171,7 +172,7 @@
 
         function removeFromCart(id) {
             cart = cart.filter(item => item.id !== id);
-            localStorage.setItem('yodha_cart', JSON.stringify(cart));
+            localStorage.setItem('tsuyoke_cart', JSON.stringify(cart));
             renderCart();
         }
 
@@ -208,7 +209,7 @@
                 return;
             }
             // Passing the bundled cart info to booking.html
-            window.location.href = `booking.html?name=${encodeURIComponent("Cart Order (" + cart.length + " items)")}&price=${document.getElementById('cart-total').innerText.replace('₹','')}`;
+            window.location.href = `booking.html?name=${encodeURIComponent("Arsenal Cart (" + cart.length + " items)")}&price=${document.getElementById('cart-total').innerText.replace('₹','')}`;
         }
     </script>
 </body>
